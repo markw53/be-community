@@ -1,0 +1,26 @@
+{
+  "name": "community-events-api",
+  "version": "1.0.0",
+  "description": "Community Events API with Express and PostgreSQL",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed-prod": "NODE_ENV=production npm run seed",
+    "setup-dbs": "psql -f ./db/setup.sql",
+    "dev": "nodemon server.js",
+    "setup-db": "psql -U postgres -f setup.sql"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "firebase-admin": "^13.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "pg": "^8.14.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
