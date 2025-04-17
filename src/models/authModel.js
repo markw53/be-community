@@ -1,6 +1,6 @@
-const db = require('../config/connection');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+import db from '../db/connection.js';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 class Auth {
   // Register a new user
@@ -256,4 +256,4 @@ class Auth {
   }
 }
 
-module.exports = Auth;
+export default Auth;

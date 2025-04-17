@@ -1,5 +1,5 @@
-const db = require('../config/connection');
-const bcrypt = require('bcryptjs');
+import db from '../db/connection.js';
+import bcrypt from 'bcryptjs';
 
 class User {
   // Find user by ID
@@ -142,4 +142,4 @@ class User {
   }
 }
 
-module.exports = User;
+export default User;

@@ -1,4 +1,4 @@
-const db = require('../config/connection');
+import db from '../db/connection.js';
 
 class Event {
   // Find event by ID
@@ -284,4 +284,4 @@ class Event {
   }
 }
 
-module.exports = Event;
+export default Event;

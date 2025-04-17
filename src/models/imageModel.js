@@ -1,7 +1,7 @@
-const path = require('path');
-const fs = require('fs').promises;
-const { v4: uuidv4 } = require('uuid');
-const db = require('../config/connection');
+import path from 'path';
+import fs from 'fs/promises';
+import { v4 as uuidv4 } from 'uuid';
+import db from '../db/connection.js';
 
 // Define upload directories
 const uploadsDir = path.join(__dirname, '../../uploads');
@@ -153,4 +153,4 @@ class Image {
   }
 }
 
-module.exports = Image;
+export default Image;
