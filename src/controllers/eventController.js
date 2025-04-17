@@ -1,7 +1,7 @@
-import Event from '../models/Event.js';
+import Event from '../models/eventModel.js'; // Assuming you have an Event model for database operations
 
 // Get all events with filtering and pagination
-const getAllEvents = async (req, res) => {
+export const getAllEvents = async (req, res) => {
   try {
     const { 
       page = 1, 
@@ -41,7 +41,7 @@ const getAllEvents = async (req, res) => {
 };
 
 // Get event by ID
-const getEventById = async (req, res) => {
+export const getEventById = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
     
@@ -62,7 +62,7 @@ const getEventById = async (req, res) => {
 };
 
 // Create new event
-const createEvent = async (req, res) => {
+export const createEvent = async (req, res) => {
   try {
     const { 
       title, 
@@ -97,7 +97,7 @@ const createEvent = async (req, res) => {
 };
 
 // Update event
-const updateEvent = async (req, res) => {
+export const updateEvent = async (req, res) => {
   try {
     const eventId = req.params.id;
     
@@ -146,7 +146,7 @@ const updateEvent = async (req, res) => {
 };
 
 // Delete event
-const deleteEvent = async (req, res) => {
+export const deleteEvent = async (req, res) => {
   try {
     const eventId = req.params.id;
     
@@ -171,7 +171,7 @@ const deleteEvent = async (req, res) => {
 };
 
 // Register for an event
-const registerForEvent = async (req, res) => {
+export const registerForEvent = async (req, res) => {
   try {
     const eventId = req.params.id;
     const userId = req.user.id;
@@ -190,7 +190,7 @@ const registerForEvent = async (req, res) => {
 };
 
 // Unregister from an event
-const unregisterFromEvent = async (req, res) => {
+export const unregisterFromEvent = async (req, res) => {
   try {
     const eventId = req.params.id;
     const userId = req.user.id;
@@ -209,7 +209,7 @@ const unregisterFromEvent = async (req, res) => {
 };
 
 // Get event attendees
-const getEventAttendees = async (req, res) => {
+export const getEventAttendees = async (req, res) => {
   try {
     const eventId = req.params.id;
     
@@ -233,6 +233,7 @@ const getEventAttendees = async (req, res) => {
   }
 };
 
+// Also provide a default export for backward compatibility
 export default {
   getAllEvents,
   getEventById,

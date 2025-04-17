@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js'; // Assuming you have a User model for database operations
+import User from '../models/userModel.js'; // Assuming you have a User model for database operations
 
 // Register a new user (non-Firebase)
-const register = async (req, res) => {
+export const register = async (req, res) => {
   try {
     const { email, password, displayName } = req.body;
     
@@ -47,7 +47,7 @@ const register = async (req, res) => {
 };
 
 // Login user (non-Firebase)
-const login = async (req, res) => {
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     
@@ -93,7 +93,7 @@ const login = async (req, res) => {
 };
 
 // Get current user profile
-const getCurrentUser = async (req, res) => {
+export const getCurrentUser = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     
@@ -121,7 +121,7 @@ const getCurrentUser = async (req, res) => {
 };
 
 // Process Firebase user login/registration
-const processFirebaseAuth = async (req, res) => {
+export const processFirebaseAuth = async (req, res) => {
   try {
     // User is already authenticated and added to req.user by the auth middleware
     const { id, email, displayName, role } = req.user;
@@ -149,6 +149,7 @@ const processFirebaseAuth = async (req, res) => {
   }
 };
 
+// You can also provide a default export that includes all functions if needed
 export default {
   register,
   login,

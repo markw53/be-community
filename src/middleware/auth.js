@@ -119,7 +119,7 @@ const authorize = (...roles) => {
 // Choose which auth method to use based on environment or config
 const auth = process.env.USE_JWT_AUTH === 'true' ? jwtAuth : firebaseAuth;
 
-export default {
+export {
   auth,
   authorize,
   firebaseAuth,
