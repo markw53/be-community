@@ -10,7 +10,7 @@
     "seed-test": "NODE_ENV=test node ./src/db/seeds/run-seed.js",
     "seed": "node ./src/db/seeds/run-seed.js",
     "dev": "nodemon server.js",
-    "setup-db": "psql -U postgres -f setup.sql"
+    "setup-db": "node setup-db.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
