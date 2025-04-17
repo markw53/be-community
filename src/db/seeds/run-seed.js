@@ -1,6 +1,6 @@
-const seed = require('./seed');
-const db = require('../../db/connection');
-const testData = require('../data/test-data');
+import seed from './seed.js';
+import db from '../../db/connection.js';
+import testData from '../data/test-data.js';
 
 const runSeed = async () => {
   try {

@@ -93,18 +93,18 @@ class Image {
   static async getImageDimensions(filePath) {
     try {
       // This would require the sharp package
-      // const sharp = require('sharp');
-      // const metadata = await sharp(filePath).metadata();
-      // return {
-      //   width: metadata.width,
-      //   height: metadata.height
-      // };
-      
-      // For now, return placeholder dimensions
+      const sharp = require('sharp');
+      const metadata = await sharp(filePath).metadata();
       return {
-        width: 800,
-        height: 600
+        width: metadata.width,
+        height: metadata.height
       };
+      
+      // // For now, return placeholder dimensions
+      // return {
+      //   width: 800,
+      //   height: 600
+      // };
     } catch (error) {
       console.error('Error getting image dimensions:', error);
       return null;
@@ -115,14 +115,14 @@ class Image {
   static async resizeImage(filePath, width, height) {
     try {
       // This would require the sharp package
-      // const sharp = require('sharp');
-      // const resizedImageBuffer = await sharp(filePath)
-      //   .resize(width, height)
-      //   .toBuffer();
-      // return resizedImageBuffer;
+      const sharp = require('sharp');
+      const resizedImageBuffer = await sharp(filePath)
+        .resize(width, height)
+        .toBuffer();
+      return resizedImageBuffer;
       
       // For now, just return the original file
-      return await fs.readFile(filePath);
+      // return await fs.readFile(filePath);
     } catch (error) {
       console.error('Error resizing image:', error);
       return null;
@@ -133,19 +133,19 @@ class Image {
   static async generateThumbnail(filePath, fileName, type) {
     try {
       // This would require the sharp package
-      // const sharp = require('sharp');
-      // const thumbnailDir = path.join(uploadsDir, 'thumbnails');
-      // await fs.mkdir(thumbnailDir, { recursive: true });
+      const sharp = require('sharp');
+      const thumbnailDir = path.join(uploadsDir, 'thumbnails');
+      await fs.mkdir(thumbnailDir, { recursive: true });
       
-      // const thumbnailPath = path.join(thumbnailDir, `thumb_${fileName}`);
-      // await sharp(filePath)
-      //   .resize(200, 200, { fit: 'inside' })
-      //   .toFile(thumbnailPath);
+      const thumbnailPath = path.join(thumbnailDir, `thumb_${fileName}`);
+      await sharp(filePath)
+        .resize(200, 200, { fit: 'inside' })
+        .toFile(thumbnailPath);
       
-      // return `/uploads/thumbnails/thumb_${fileName}`;
+      return `/uploads/thumbnails/thumb_${fileName}`;
       
       // For now, just return the original URL
-      return `/uploads/${type === 'event' ? 'events' : 'profiles'}/${fileName}`;
+      // return `/uploads/${type === 'event' ? 'events' : 'profiles'}/${fileName}`;
     } catch (error) {
       console.error('Error generating thumbnail:', error);
       return null;

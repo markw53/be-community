@@ -1,4 +1,4 @@
-module.exports = [
+export default [
     {
       title: 'Community Cleanup',
       description: 'Join us for a day of cleaning up the local park.',

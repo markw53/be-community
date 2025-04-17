@@ -3,6 +3,7 @@ const fs = require('fs').promises;
 const { v4: uuidv4 } = require('uuid');
 const User = require('../models/userModel');
 const Event = require('../models/eventModel');
+const Image = require('../models/imageModel');
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, '../../uploads');
@@ -57,25 +58,19 @@ const uploadProfileImage = async (req, res) => {
       return res.status(400).json({ message: 'No image file provided' });
     }
     
-    const fileExtension = path.extname(req.file.originalname).toLowerCase();
-    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
+    const result = await Image.saveImage(req.file, 'profile');
     
-    if (!allowedExtensions.includes(fileExtension)) {
-      return res.status(400).json({ message: 'Invalid file type. Only JPG, PNG, and GIF are allowed' });
+    if (!result.success) {
+      return res.status(400).json({ message: result.message });
     }
     
-    const fileName = `${uuidv4()}${fileExtension}`;
-    const filePath = path.join(profileImagesDir, fileName);
+    // Update user's profile photo URL in database
+    await db.query(
+      'UPDATE users SET photo_url = $1, updated_at = NOW() WHERE id = $2',
+      [result.imageUrl, req.user.id]
+    );
     
-    await fs.writeFile(filePath, req.file.buffer);
-    
-    // Create a URL for the image
-    const imageUrl = `/uploads/profiles/${fileName}`;
-    
-    // Update user's profile photo URL
-    await User.update(req.user.id, { photoUrl: imageUrl });
-    
-    res.status(201).json({ imageUrl });
+    res.status(201).json({ imageUrl: result.imageUrl });
   } catch (error) {
     console.error('Upload profile image error:', error);
     res.status(500).json({ message: 'Failed to upload image' });

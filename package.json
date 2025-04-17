@@ -1,6 +1,7 @@
 {
   "name": "community-events-api",
   "version": "1.0.0",
+  "type": "module",
   "description": "Community Events API with Express and PostgreSQL",
   "main": "server.js",
   "scripts": {
@@ -19,7 +20,8 @@
     "firebase-admin": "^13.2.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
-    "pg": "^8.14.1"
+    "pg": "^8.14.1",
+    "sharp": "^0.34.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

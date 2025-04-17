@@ -1,4 +1,4 @@
-module.exports = [
+export default [
     {
       event_title: 'Community Cleanup',
       attendee_email: 'user@example.com'

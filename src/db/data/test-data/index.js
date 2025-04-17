@@ -1,5 +1,5 @@
-const userData = require('./users');
-const eventData = require('./events');
-const attendeeData = require('./attendees');
+import userData from './users.js';
+import eventData from './events.js';
+import attendeeData from './attendees.js';
 
-module.exports = { userData, eventData, attendeeData };
+export default { userData, eventData, attendeeData };
