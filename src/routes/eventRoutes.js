@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import * as eventController from '../controllers/eventController.js';
+import { auth, authorize } from '../middleware/auth.js';
+
 const router = express.Router();
-const eventController = require('../controllers/eventController');
-const { auth, authorize } = require('../middleware/auth');
 
 // Get all events (public)
 router.get('/', eventController.getAllEvents);
@@ -27,4 +28,4 @@ router.delete('/:id/register', auth, eventController.unregisterFromEvent);
 // Get event attendees (authenticated, owner or admin only)
 router.get('/:id/attendees', auth, eventController.getEventAttendees);
 
-module.exports = router;
+export default router;

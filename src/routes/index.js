@@ -1,10 +1,10 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
-const authRoutes = require('./authRoutes');
-const eventRoutes = require('./eventRoutes');
-const userRoutes = require('./userRoutes');
-const imageRoutes = require('./imageRoutes');
+import * as authRoutes from './authRoutes.js';
+import * as eventRoutes from './eventRoutes.js';
+import * as userRoutes from './userRoutes.js';
+import * as imageRoutes from './imageRoutes.js';
 
 // Mount the routes
 router.use('/auth', authRoutes);
@@ -17,4 +17,4 @@ router.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'API is running' });
 });
 
-module.exports = router;
+export default router;

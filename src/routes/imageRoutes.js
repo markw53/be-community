@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
+import * as imageController from '../controllers/imageController.js';
+import auth from '../middleware/auth.js';
+import multer from 'multer';
+
 const router = express.Router();
-const imageController = require('../controllers/imageController');
-const { auth } = require('../middleware/auth');
-const multer = require('multer');
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
@@ -25,4 +26,4 @@ router.post('/events', auth, upload.single('image'), imageController.uploadEvent
 // Upload profile image
 router.post('/profile', auth, upload.single('image'), imageController.uploadProfileImage);
 
-module.exports = router;
+export default router;

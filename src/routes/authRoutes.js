@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import * as authController from '../controllers/authController.js';
+import { auth } from '../middleware/aut.js';
+
 const router = express.Router();
-const authController = require('../controllers/authController');
-const { auth } = require('../middleware/auth');
 
 // Register a new user (non-Firebase)
 router.post('/register', authController.register);
@@ -15,4 +16,4 @@ router.post('/firebase', auth, authController.processFirebaseAuth);
 // Get current user profile
 router.get('/me', auth, authController.getCurrentUser);
 
-module.exports = router;
+export default router;
