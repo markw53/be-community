@@ -1,9 +1,9 @@
-const path = require('path');
-const fs = require('fs').promises;
-const { v4: uuidv4 } = require('uuid');
-const User = require('../models/userModel');
-const Event = require('../models/eventModel');
-const Image = require('../models/imageModel');
+import path from 'path';
+import fs from 'fs/promises';
+import { v4 as uuidv4 } from 'uuid';
+import User from '../models/userModel';
+import Event from '../models/eventModel';
+import Image from '../models/imageModel';
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, '../../uploads');
@@ -77,7 +77,7 @@ const uploadProfileImage = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   uploadEventImage,
   uploadProfileImage
 };

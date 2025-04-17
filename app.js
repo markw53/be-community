@@ -1,11 +1,17 @@
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const path = require('path');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+import apiRoutes from './routes/index.js';
 
-// Import routes
-const apiRoutes = require('./routes');
+// Load environment variables
+dotenv.config();
+
+// Get directory name in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Create Express app
 const app = express();
@@ -32,4 +38,4 @@ app.use((req, res) => {
   res.status(404).json({ message: `Route not found: ${req.originalUrl}` });
 });
 
-module.exports = app;
+export default app;

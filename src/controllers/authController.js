@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/userModel');
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js'; // Assuming you have a User model for database operations
 
 // Register a new user (non-Firebase)
 const register = async (req, res) => {
@@ -149,7 +149,7 @@ const processFirebaseAuth = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   register,
   login,
   getCurrentUser,

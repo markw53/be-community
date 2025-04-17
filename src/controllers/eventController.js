@@ -1,4 +1,4 @@
-const Event = require('../models/eventModel');
+import Event from '../models/Event.js';
 
 // Get all events with filtering and pagination
 const getAllEvents = async (req, res) => {
@@ -233,7 +233,7 @@ const getEventAttendees = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   getAllEvents,
   getEventById,
   createEvent,

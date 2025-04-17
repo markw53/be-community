@@ -1,8 +1,16 @@
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const admin = require('firebase-admin');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import admin from 'firebase-admin';
+import dotenv from 'dotenv';
+
+// Import routes
+import authRoutes from './src/routes/authRoutes.js';
+import eventRoutes from './src/routes/eventRoutes.js';
+import userRoutes from './src/routes/userRoutes.js';
+
+// Load environment variables
+dotenv.config();
 
 // Initialize Firebase Admin SDK
 if (process.env.FIREBASE_PROJECT_ID) {
@@ -15,11 +23,6 @@ if (process.env.FIREBASE_PROJECT_ID) {
   });
   console.log('Firebase Admin SDK initialized');
 }
-
-// Import routes
-const authRoutes = require('./src/routes/authRoutes');
-const eventRoutes = require('./src/routes/eventRoutes');
-const userRoutes = require('./src/routes/userRoutes');
 
 // Create Express app
 const app = express();
@@ -52,6 +55,28 @@ app.use((req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+const startServer = () => {
+  try {
+    app.listen(PORT, () => {
+      console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
 });
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
+  process.exit(1);
+});
+
+// Start the server
+startServer();

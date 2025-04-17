@@ -1,4 +1,4 @@
-const User = require('../models/userModel');
+import User from '../models/userModel';
 
 // Get user profile
 const getUserProfile = async (req, res) => {
@@ -155,7 +155,7 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = {
+export default {
   getUserProfile,
   updateUserProfile,
   getUserEvents,

@@ -1,6 +1,6 @@
-const admin = require('firebase-admin');
-const jwt = require('jsonwebtoken');
-const db = require('../config/connection');
+import admin from 'firebase-admin';
+import jwt from 'jsonwebtoken';
+import db from '../db/connection.js';
 
 // Middleware to verify Firebase token
 const firebaseAuth = async (req, res, next) => {
@@ -119,7 +119,7 @@ const authorize = (...roles) => {
 // Choose which auth method to use based on environment or config
 const auth = process.env.USE_JWT_AUTH === 'true' ? jwtAuth : firebaseAuth;
 
-module.exports = {
+export default {
   auth,
   authorize,
   firebaseAuth,
