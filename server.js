@@ -3,6 +3,12 @@ import cors from 'cors';
 import morgan from 'morgan';
 import admin from 'firebase-admin';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get directory name in ESM
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Import routes
 import authRoutes from './src/routes/authRoutes.js';
@@ -13,41 +19,48 @@ import userRoutes from './src/routes/userRoutes.js';
 dotenv.config();
 
 // Initialize Firebase Admin SDK
-if (process.env.FIREBASE_PROJECT_ID && process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test') {
   try {
-    // Option 1: Using environment variables directly
-    if (process.env.FIREBASE_PRIVATE_KEY) {
+    // Try to load the service account file
+    const serviceAccountPath = path.join(__dirname, 'config', 'firebase-service-account.json');
+    
+    if (fs.existsSync(serviceAccountPath)) {
+      // Read and parse the service account file
+      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+      
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+      });
+      console.log('Firebase Admin SDK initialized with service account file');
+    } 
+    // Fallback to environment variables if file doesn't exist
+    else if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
       admin.initializeApp({
         credential: admin.credential.cert({
           projectId: process.env.FIREBASE_PROJECT_ID,
-          // Make sure to properly handle the private key
           privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
           clientEmail: process.env.FIREBASE_CLIENT_EMAIL
         })
       });
       console.log('Firebase Admin SDK initialized with environment variables');
-    } 
-    // Option 2: Using a JSON string
-    else if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-      });
-      console.log('Firebase Admin SDK initialized with service account JSON');
     }
-    // Skip Firebase in development if needed
+    // Skip Firebase if configured to do so
     else if (process.env.SKIP_FIREBASE === 'true') {
       console.log('Skipping Firebase initialization as configured');
     }
     else {
-      console.warn('Firebase credentials incomplete. Some authentication features may not work.');
+      console.warn('Firebase credentials not found. Authentication will be limited to JWT only.');
+      // Set environment variable to use JWT auth instead
+      process.env.USE_JWT_AUTH = 'true';
     }
   } catch (error) {
     console.error('Error initializing Firebase Admin SDK:', error);
-    console.warn('Continuing without Firebase. Authentication will be limited.');
+    console.warn('Continuing without Firebase. Authentication will be limited to JWT only.');
+    // Set environment variable to use JWT auth instead
+    process.env.USE_JWT_AUTH = 'true';
   }
 } else {
-  console.log('Firebase configuration not found or in test mode. Skipping Firebase initialization.');
+  console.log('Running in test mode. Skipping Firebase initialization.');
 }
 
 // Create Express app
@@ -66,7 +79,11 @@ app.use('/api/users', userRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'API is running' });
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'API is running',
+    authMode: process.env.USE_JWT_AUTH === 'true' ? 'JWT' : 'Firebase'
+  });
 });
 
 // Error handling middleware
@@ -85,6 +102,7 @@ const startServer = () => {
   try {
     app.listen(PORT, () => {
       console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+      console.log(`Using ${process.env.USE_JWT_AUTH === 'true' ? 'JWT' : 'Firebase'} authentication`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);
