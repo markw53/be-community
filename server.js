@@ -132,6 +132,27 @@ app.use('/api/users', userRoutes);
 app.use('/api/images', imageRoutes);
 
 // Health check endpoint
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Check system health
+ *     description: Returns the health status of the API and its dependencies
+ *     tags: [System]
+ *     responses:
+ *       200:
+ *         description: System health information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthCheck'
+ *       503:
+ *         description: System is unhealthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthCheck'
+ */
 app.get('/health', async (req, res) => {
   const healthStatus = await performHealthCheck();
   
