@@ -19,6 +19,8 @@ import setupSwagger from './src/utils/swagger.js';
 import { performHealthCheck } from './src/utils/healthCheck.js';
 import { closeRedisConnection } from './src/middleware/cache.js';
 import { closeQueues } from './src/jobs/queue.js';
+import { sequelize } from './src/database/config.js';
+import { seedDatabase } from './src/database/seeds/index.js';
 
 // Import routes
 import authRoutes from './src/routes/authRoutes.js';
@@ -28,6 +30,9 @@ import imageRoutes from './src/routes/imageRoutes.js';
 
 // Get directory name in ESM
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Initialize Express app
+const app = express();
 
 // Initialize Sentry for error tracking (if DSN is provided)
 if (process.env.SENTRY_DSN) {
@@ -84,9 +89,6 @@ try {
   process.env.USE_JWT_AUTH = 'true';
 }
 
-// Create Express app
-const app = express();
-
 // Use Sentry request handler if initialized
 if (process.env.SENTRY_DSN) {
   app.use(Sentry.Handlers.requestHandler());
@@ -130,7 +132,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/images', imageRoutes);
 
 // Health check endpoint
-// Health check endpoint
 app.get('/health', async (req, res) => {
   const healthStatus = await performHealthCheck();
   
@@ -161,69 +162,92 @@ app.use(notFoundHandler);
 // Global error handler
 app.use(errorHandler);
 
-// Start server
-const server = app.listen(config.port, () => {
-  logger.info(`Server running in ${config.env} mode on port ${config.port}`);
-  logger.info(`Using ${process.env.USE_JWT_AUTH === 'true' ? 'JWT' : 'Firebase'} authentication`);
-  logger.info(`API documentation available at http://localhost:${config.port}/api-docs`);
-});
-
-// Graceful shutdown
-const gracefulShutdown = async (signal) => {
-  logger.info(`Received ${signal}. Shutting down gracefully...`);
-  
-  // Close server
-  server.close(() => {
-    logger.info('HTTP server closed');
-  });
-  
+// Initialize database and start server
+const initializeApp = async () => {
   try {
-    // Close database connections
-    await db.end();
-    logger.info('Database connections closed');
+    // Sync database models
+    await sequelize.sync({ alter: config.env === 'development' });
+    logger.info('Database synchronized');
     
-    // Close Redis connection if enabled
-    await closeRedisConnection();
+    // Seed database in development if flag is set
+    if (config.env === 'development' && process.env.SEED_DB === 'true') {
+      logger.info('Seeding database...');
+      await seedDatabase();
+      logger.info('Database seeded successfully');
+    }
     
-    // Close job queues if enabled
-    await closeQueues();
+    // Start server
+    const server = app.listen(config.port, () => {
+      logger.info(`Server running in ${config.env} mode on port ${config.port}`);
+      logger.info(`Using ${process.env.USE_JWT_AUTH === 'true' ? 'JWT' : 'Firebase'} authentication`);
+      logger.info(`API documentation available at http://localhost:${config.port}/api-docs`);
+    });
     
-    // Exit with success code
-    process.exit(0);
-  } catch (err) {
-    logger.error('Error during graceful shutdown', err);
+    // Graceful shutdown
+    const gracefulShutdown = async (signal) => {
+      logger.info(`Received ${signal}. Shutting down gracefully...`);
+      
+      // Close server
+      server.close(() => {
+        logger.info('HTTP server closed');
+      });
+      
+      try {
+        // Close database connections
+        await sequelize.close();
+        logger.info('Database connections closed');
+        
+        // Close Redis connection if enabled
+        await closeRedisConnection();
+        
+        // Close job queues if enabled
+        await closeQueues();
+        
+        // Exit with success code
+        process.exit(0);
+      } catch (err) {
+        logger.error('Error during graceful shutdown', err);
+        process.exit(1);
+      }
+    };
+    
+    // Listen for termination signals
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+    
+    // Handle uncaught exceptions
+    process.on('uncaughtException', (err) => {
+      logger.error('Uncaught Exception:', err);
+      
+      // In production, try to gracefully shutdown
+      // In development, exit immediately for faster debugging
+      if (config.env === 'production') {
+        gracefulShutdown('uncaughtException');
+      } else {
+        process.exit(1);
+      }
+    });
+    
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', (err) => {
+      logger.error('Unhandled Rejection:', err);
+      
+      // In production, try to gracefully shutdown
+      // In development, exit immediately for faster debugging
+      if (config.env === 'production') {
+        gracefulShutdown('unhandledRejection');
+      } else {
+        process.exit(1);
+      }
+    });
+    
+  } catch (error) {
+    logger.error('Failed to initialize application:', error);
     process.exit(1);
   }
 };
 
-// Listen for termination signals
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+// Call the initialization function
+initializeApp();
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  logger.error('Uncaught Exception:', err);
-  
-  // In production, try to gracefully shutdown
-  // In development, exit immediately for faster debugging
-  if (config.env === 'production') {
-    gracefulShutdown('uncaughtException');
-  } else {
-    process.exit(1);
-  }
-});
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-  logger.error('Unhandled Rejection:', err);
-  
-  // In production, try to gracefully shutdown
-  // In development, exit immediately for faster debugging
-  if (config.env === 'production') {
-    gracefulShutdown('unhandledRejection');
-  } else {
-    process.exit(1);
-  }
-});
-
-export default server;
+export default app;

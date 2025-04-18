@@ -1,7 +1,7 @@
 import winston from 'winston';
 import fs from 'fs';
 import path from 'path';
-import config from '../../config/config.js';
+import config from '../../src/config/config.js';
 
 // Create logs directory if it doesn't exist
 const logsDir = config.logging.directory;

@@ -12,14 +12,50 @@ dotenv.config();
 const config = {
   env: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT || '5000', 10),
+  version: process.env.APP_VERSION || '1.0.0',
   db: {
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT || '5432', 10),
     name: process.env.DB_NAME,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
+    dialect: process.env.DB_DIALECT || 'postgres',
     poolSize: parseInt(process.env.DB_POOL_SIZE || '20', 10),
-    ssl: process.env.DB_SSL === 'true'
+    ssl: process.env.DB_SSL === 'true',
+    // Sequelize specific options
+    sequelize: {
+      dialect: process.env.DB_DIALECT || 'postgres',
+      logging: process.env.DB_LOGGING === 'true' ? console.log : false,
+      pool: {
+        max: parseInt(process.env.DB_POOL_SIZE || '20', 10),
+        min: 0,
+        acquire: 30000,
+        idle: 10000
+      },
+      define: {
+        timestamps: true,
+        underscored: false
+      },
+      // SSL configuration for production environments
+      dialectOptions: process.env.DB_SSL === 'true' ? {
+        ssl: {
+          require: true,
+          rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false'
+        }
+      } : {}
+    },
+    // Database seeding configuration
+    seeding: {
+      enabled: process.env.SEED_DB === 'true',
+      // Number of users to create when seeding
+      userCount: parseInt(process.env.SEED_USER_COUNT || '10', 10),
+      // Number of events to create when seeding
+      eventCount: parseInt(process.env.SEED_EVENT_COUNT || '20', 10),
+      // Number of categories to create when seeding
+      categoryCount: parseInt(process.env.SEED_CATEGORY_COUNT || '5', 10),
+      // Random seed for deterministic data generation
+      randomSeed: process.env.SEED_RANDOM_SEED || 'community-events-app'
+    }
   },
   jwt: {
     secret: process.env.JWT_SECRET,

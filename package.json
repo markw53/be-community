@@ -17,7 +17,9 @@
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
-    "seed": "node src/db/seed.js",
+    "seed": "SEED_COMMAND=seed node src/db/seeds/index.js",
+    "seed:reset": "SEED_COMMAND=reset node src/db/index.js",
+    "dev:seed": "SEED_DB=true nodemon src/server.js",
     "generate-jwt-secret": "node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\"",
     "docs": "node -e \"console.log('API documentation available at http://localhost:5000/api-docs')\"",
     "prepare": "husky install"
@@ -39,7 +41,10 @@
     "i18next-http-middleware": "^3.7.4",
     "ioredis": "^5.6.1",
     "jsonwebtoken": "^9.0.2",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "pg": "^8.14.1",
+    "pg-format": "^1.0.4",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "eslint": "^9.24.0",
