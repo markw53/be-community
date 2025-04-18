@@ -1,0 +1,3 @@
+{"level":"info","message":"Starting database seeding...","service":"community-events-api","timestamp":"2025-04-18 19:58:27"}
+{"level":"info","message":"Seeding categories...","service":"community-events-api","timestamp":"2025-04-18 19:58:27"}
+{"level":"error","message":"Error seeding categories: password authentication failed for user \"postgres\"","service":"community-events-api","timestamp":"2025-04-18 19:58:27"}

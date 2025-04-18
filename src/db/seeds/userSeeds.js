@@ -1,5 +1,5 @@
 // src/database/seeds/userSeeds.js
-import { User } from '../../models/userModel.js';
+import User from '../../models/userModel.js';
 import bcrypt from 'bcrypt';
 import logger from '../../utils/logger.js';
 import { faker } from '@faker-js/faker';

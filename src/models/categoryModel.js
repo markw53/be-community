@@ -1,6 +1,6 @@
 // src/database/models/Category.js
 import { DataTypes } from 'sequelize';
-import sequelize from '../config.js';
+import sequelize from '../config/database.js';
 
 const Category = sequelize.define('Category', {
   id: {

@@ -1,10 +1,10 @@
 // src/database/seeds/attendeeSeeds.js
-import { Attendee } from '../models/Attendee.js';
-import { User } from '../models/User.js';
-import { Event } from '../models/Event.js';
+import Attendee from '../../models/attendeeModel.js';
+import User from '../../models/userModel.js';
+import Event from '../../models/eventModel.js';
 import logger from '../../utils/logger.js';
 import { faker } from '@faker-js/faker';
-import config from '../../../config/config.js';
+import config from '../../../src/config/config.js';
 
 // Set a consistent seed for reproducible data
 faker.seed(config.db.seeding.randomSeed);

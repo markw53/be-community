@@ -1,6 +1,6 @@
 // src/database/models/Attendee.js
 import { DataTypes } from 'sequelize';
-import sequelize from '../config.js';
+import sequelize from '../config/database.js';
 
 const Attendee = sequelize.define('Attendee', {
   id: {
