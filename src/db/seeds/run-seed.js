@@ -1,6 +1,6 @@
 import seed from './seed.js';
 import db from '../../db/connection.js';
-import testData from '../data/test-data.js';
+import testData from '../data/test-data/index.js';
 
 const runSeed = async () => {
   try {

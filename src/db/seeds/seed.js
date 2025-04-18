@@ -296,4 +296,4 @@ const seed = async ({ userData, eventData, attendeeData }) => {
   }
 };
 
-module.exports = seed;
+export default seed;
