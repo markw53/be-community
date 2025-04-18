@@ -1,9 +1,9 @@
 // src/database/seeds/userSeeds.js
-import { User } from '../models/User.js';
+import { User } from '../../models/userModel.js';
 import bcrypt from 'bcrypt';
 import logger from '../../utils/logger.js';
 import { faker } from '@faker-js/faker';
-import config from '../../../config/config.js';
+import config from '../../../src/config/config.js';
 
 // Set a consistent seed for reproducible data
 faker.seed(config.db.seeding.randomSeed);

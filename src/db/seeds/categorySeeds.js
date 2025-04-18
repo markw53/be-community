@@ -1,5 +1,5 @@
 // src/database/seeds/categorySeeds.js
-import { Category } from '../models/Category.js';
+import { Category } from '../../models/categoryModel.js';
 import logger from '../../utils/logger.js';
 
 /**

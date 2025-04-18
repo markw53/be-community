@@ -5,7 +5,7 @@ import { seedEvents } from './eventSeeds.js';
 import { seedCategories } from './categorySeeds.js';
 import { seedAttendees } from './attendeeSeeds.js';
 import logger from '../../utils/logger.js';
-import config from '../../../config/config.js';
+import config from '../../../src/config/config.js';
 
 /**
  * Seed the database with initial data

@@ -1,6 +1,6 @@
 // src/database/config.js
 import { Sequelize } from 'sequelize';
-import config from '../../config/config.js';
+import config from '../../src/config/config.js';
 import logger from '../utils/logger.js';
 
 const dbConfig = config.db;
