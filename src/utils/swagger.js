@@ -1,7 +1,7 @@
 // src/utils/swagger.js
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import config from '../../config/config.js';
+import config from '../../src/config/config.js';
 import logger from './logger.js';
 
 /**

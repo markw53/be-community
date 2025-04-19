@@ -10,7 +10,7 @@ import * as Sentry from '@sentry/node';
 import helmet from 'helmet';
 
 // Import configuration and utilities
-import config from './config/config.js';
+import config from './src/config/index.js';
 import logger from './src/utils/logger.js';
 import { applySecurityMiddleware } from './src/middleware/security.js';
 import { notFoundHandler, errorHandler } from './src/middleware/errorHandler.js';
@@ -19,17 +19,15 @@ import setupSwagger from './src/utils/swagger.js';
 import { performHealthCheck } from './src/utils/healthCheck.js';
 import { closeRedisConnection } from './src/middleware/cache.js';
 import { closeQueues } from './src/jobs/queue.js';
-import { sequelize } from './src/database/config.js';
-import { seedDatabase } from './src/database/seeds/index.js';
-
-// Import routes
-import authRoutes from './src/routes/authRoutes.js';
-import eventRoutes from './src/routes/eventRoutes.js';
-import userRoutes from './src/routes/userRoutes.js';
-import imageRoutes from './src/routes/imageRoutes.js';
+import { sequelize } from './src/db/config.js';
+import { seedDatabase } from './src/db/seeds/index.js';
 
 // Get directory name in ESM
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Read package.json for version info (Node.js v23+ compatible)
+const packageJsonPath = path.join(__dirname, 'package.json');
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
 // Initialize Express app
 const app = express();
@@ -167,7 +165,7 @@ app.get('/health', async (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     message: req.t('welcome'),
-    version: config.version,
+    version: packageJson.version || config.version,
     documentation: '/api-docs'
   });
 });
@@ -200,6 +198,7 @@ const initializeApp = async () => {
     // Start server
     const server = app.listen(config.port, () => {
       logger.info(`Server running in ${config.env} mode on port ${config.port}`);
+      logger.info(`${packageJson.name} v${packageJson.version}`);
       logger.info(`Using ${process.env.USE_JWT_AUTH === 'true' ? 'JWT' : 'Firebase'} authentication`);
       logger.info(`API documentation available at http://localhost:${config.port}/api-docs`);
     });

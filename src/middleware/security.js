@@ -1,7 +1,7 @@
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import cors from 'cors';
-import config from '../../config/config.js';
+import config from '../../src/config/config.js';
 import logger from '../utils/logger.js';
 
 // Rate limiting middleware

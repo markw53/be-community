@@ -44,9 +44,13 @@
     "ioredis": "^5.6.1",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.2",
+    "node-cache": "^5.1.2",
     "pg": "^8.14.1",
     "pg-format": "^1.0.4",
     "sequelize": "^6.37.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "winston": "^3.17.0"
   },
   "devDependencies": {
@@ -74,7 +78,7 @@
     "*.js": "eslint --cache --fix"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=23.0.0"
   },
   "author": "",
   "license": "MIT"

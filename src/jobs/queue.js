@@ -1,7 +1,7 @@
 import Bull from 'bull';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import config from '../../config/config.js';
+import config from '../../src/config/config.js';
 import logger from '../utils/logger.js';
 
 // Get directory name in ESM
