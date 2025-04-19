@@ -3,7 +3,8 @@ import admin from 'firebase-admin';
 import cache from '../middleware/cache.js';
 import logger from './logger.js';
 import os from 'os';
-import { version } from '../../package.json';
+import packageJson from '../../package.json' with { type: 'json' };
+const { version } = packageJson;
 
 /**
  * Perform database health check

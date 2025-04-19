@@ -10,6 +10,48 @@ const cache = new NodeCache({
   deleteOnExpire: true // Automatically delete expired items
 });
 
+// Redis client (initialized if Redis is enabled)
+let redisClient = null;
+
+// Initialize Redis if configured
+if (config.cache?.useRedis) {
+  try {
+    const { createClient } = await import('redis');
+    
+    redisClient = createClient({
+      url: config.cache.redisUrl || 'redis://localhost:6379',
+      password: config.cache.redisPassword,
+      database: config.cache.redisDb || 0
+    });
+    
+    redisClient.on('error', (err) => {
+      console.error('Redis client error:', err);
+    });
+    
+    await redisClient.connect();
+    console.log('Redis client connected successfully');
+  } catch (error) {
+    console.error('Failed to initialize Redis client:', error);
+    console.warn('Falling back to in-memory cache');
+  }
+}
+
+/**
+ * Close Redis connection if it exists
+ * @returns {Promise<void>}
+ */
+export const closeRedisConnection = async () => {
+  if (redisClient) {
+    try {
+      await redisClient.quit();
+      console.log('Redis connection closed');
+    } catch (error) {
+      console.error('Error closing Redis connection:', error);
+    }
+  }
+  return Promise.resolve();
+};
+
 /**
  * Generate a cache key based on the request
  * @param {Object} req - Express request object
@@ -24,6 +66,65 @@ const generateCacheKey = (req, prefix = '') => {
   
   // Include user ID in cache key for personalized responses
   return `${prefix}:${method}:${path}:${query}:${userId}`;
+};
+
+/**
+ * Get item from cache (tries Redis first, falls back to local cache)
+ * @param {string} key - Cache key
+ * @returns {Promise<any>} Cached value or null
+ */
+const getFromCache = async (key) => {
+  if (redisClient) {
+    try {
+      const value = await redisClient.get(key);
+      return value ? JSON.parse(value) : null;
+    } catch (error) {
+      console.error('Redis get error:', error);
+      // Fall back to local cache
+    }
+  }
+  
+  return cache.get(key);
+};
+
+/**
+ * Set item in cache (tries Redis first, falls back to local cache)
+ * @param {string} key - Cache key
+ * @param {any} value - Value to cache
+ * @param {number} ttl - Time to live in seconds
+ * @returns {Promise<boolean>} Success status
+ */
+const setInCache = async (key, value, ttl) => {
+  if (redisClient) {
+    try {
+      await redisClient.set(key, JSON.stringify(value), { EX: ttl });
+      return true;
+    } catch (error) {
+      console.error('Redis set error:', error);
+      // Fall back to local cache
+    }
+  }
+  
+  return cache.set(key, value, ttl);
+};
+
+/**
+ * Delete item from cache
+ * @param {string} key - Cache key
+ * @returns {Promise<boolean>} Success status
+ */
+const deleteFromCache = async (key) => {
+  if (redisClient) {
+    try {
+      await redisClient.del(key);
+      return true;
+    } catch (error) {
+      console.error('Redis delete error:', error);
+      // Fall back to local cache
+    }
+  }
+  
+  return cache.del(key);
 };
 
 /**
@@ -43,7 +144,7 @@ export const cacheMiddleware = (options = {}) => {
     condition = () => true
   } = options;
 
-  return (req, res, next) => {
+  return async (req, res, next) => {
     // Skip caching for non-GET requests unless explicitly configured otherwise
     if (req.method !== 'GET' && !options.cacheNonGetRequests) {
       return next();
@@ -58,15 +159,21 @@ export const cacheMiddleware = (options = {}) => {
     const key = keyGenerator(req, prefix);
 
     // Check if response exists in cache
-    const cachedResponse = cache.get(key);
-    if (cachedResponse) {
-      // Add cache header to indicate cache hit
-      res.set('X-Cache', 'HIT');
+    try {
+      const cachedResponse = await getFromCache(key);
       
-      // Return cached response
-      return res.status(cachedResponse.status)
-        .set(cachedResponse.headers)
-        .send(cachedResponse.data);
+      if (cachedResponse) {
+        // Add cache header to indicate cache hit
+        res.set('X-Cache', 'HIT');
+        
+        // Return cached response
+        return res.status(cachedResponse.status)
+          .set(cachedResponse.headers)
+          .send(cachedResponse.data);
+      }
+    } catch (error) {
+      console.error('Cache retrieval error:', error);
+      // Continue without caching if there's an error
     }
 
     // Add cache header to indicate cache miss
@@ -76,7 +183,7 @@ export const cacheMiddleware = (options = {}) => {
     const originalSend = res.send;
 
     // Override send method to cache the response
-    res.send = function(body) {
+    res.send = async function(body) {
       // Only cache successful responses
       if (res.statusCode >= 200 && res.statusCode < 300) {
         const responseToCache = {
@@ -88,7 +195,12 @@ export const cacheMiddleware = (options = {}) => {
         };
         
         // Store response in cache
-        cache.set(key, responseToCache, ttl);
+        try {
+          await setInCache(key, responseToCache, ttl);
+        } catch (error) {
+          console.error('Cache storage error:', error);
+          // Continue without caching if there's an error
+        }
       }
       
       // Call original send method
@@ -102,9 +214,28 @@ export const cacheMiddleware = (options = {}) => {
 /**
  * Clear cache for a specific key pattern
  * @param {string} pattern - Pattern to match cache keys
- * @returns {number} Number of keys removed
+ * @returns {Promise<number>} Number of keys removed
  */
-export const clearCache = (pattern = '') => {
+export const clearCache = async (pattern = '') => {
+  if (redisClient) {
+    try {
+      if (!pattern) {
+        await redisClient.flushDb();
+        return 1;
+      }
+      
+      const keys = await redisClient.keys(`*${pattern}*`);
+      if (keys.length > 0) {
+        await redisClient.del(keys);
+        return keys.length;
+      }
+      return 0;
+    } catch (error) {
+      console.error('Redis clear cache error:', error);
+      // Fall back to local cache
+    }
+  }
+  
   if (!pattern) {
     return cache.flushAll();
   }
@@ -142,15 +273,19 @@ export const clearCacheMiddleware = (options = {}) => {
     }
     
     // Clear cache after response is sent
-    res.on('finish', () => {
+    res.on('finish', async () => {
       // Only clear cache for successful write operations
       if (
         (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE' || req.method === 'PATCH') &&
         res.statusCode >= 200 && res.statusCode < 300
       ) {
-        const count = clearCache(pattern);
-        if (config.isDev) {
-          console.log(`Cleared ${count} cache entries matching pattern: ${pattern}`);
+        try {
+          const count = await clearCache(pattern);
+          if (config.isDev) {
+            console.log(`Cleared ${count} cache entries matching pattern: ${pattern}`);
+          }
+        } catch (error) {
+          console.error('Error clearing cache:', error);
         }
       }
     });
@@ -161,10 +296,28 @@ export const clearCacheMiddleware = (options = {}) => {
 
 /**
  * Get cache statistics
- * @returns {Object} Cache statistics
+ * @returns {Promise<Object>} Cache statistics
  */
-export const getCacheStats = () => {
+export const getCacheStats = async () => {
+  if (redisClient) {
+    try {
+      const info = await redisClient.info();
+      const dbSize = await redisClient.dbSize();
+      
+      return {
+        type: 'redis',
+        keys: dbSize,
+        info: info,
+        memory: info.match(/used_memory_human:(\S+)/)?.[1] || 'unknown'
+      };
+    } catch (error) {
+      console.error('Error getting Redis stats:', error);
+      // Fall back to local cache stats
+    }
+  }
+  
   return {
+    type: 'memory',
     keys: cache.keys().length,
     hits: cache.getStats().hits,
     misses: cache.getStats().misses,
@@ -195,9 +348,13 @@ export const cacheControl = (options = {}) => {
 // Export cache instance for direct manipulation
 export default {
   cache,
+  redisClient,
   cacheMiddleware,
   clearCache,
   clearCacheMiddleware,
   getCacheStats,
-  cacheControl
+  cacheControl,
+  closeRedisConnection
 };
+
+      
